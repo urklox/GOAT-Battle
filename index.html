@@ -402,6 +402,34 @@ button:active:not(:disabled) {
     <div id="podium" class="podium"></div>
     <div id="leaderboard">Waiting for votes…</div>
   </section>
+  <section class="panel" id="shareSection">
+  <h2>📲 Share Your GOAT</h2>
+
+  <p style="color:var(--muted)">
+    Choose your favourite legend and share your pick with friends!
+  </p>
+
+  <select id="sharePlayer"
+    style="width:100%;padding:13px;margin:10px 0 14px;border-radius:10px;background:#121927;color:#fff;border:1px solid #35445b;font-size:15px">
+
+    <option value="Michel Platini">Michel Platini</option>
+    <option value="Alfredo Di Stéfano">Alfredo Di Stéfano</option>
+    <option value="Franz Beckenbauer">Franz Beckenbauer</option>
+    <option value="Ronaldo Nazário">Ronaldo Nazário</option>
+    <option value="Zinedine Zidane">Zinedine Zidane</option>
+    <option value="Johan Cruyff">Johan Cruyff</option>
+    <option value="Cristiano Ronaldo">Cristiano Ronaldo</option>
+    <option value="Diego Maradona">Diego Maradona</option>
+    <option value="Pelé">Pelé</option>
+    <option value="Lionel Messi">Lionel Messi</option>
+  </select>
+
+  <button type="button" id="shareButton" style="width:100%">
+    📲 Share My GOAT
+  </button>
+
+  <p id="shareStatus" class="status" aria-live="polite"></p>
+</section>
   <footer>GOAT BATTLE · Fan voting, not an official award</footer>
 </main>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -547,6 +575,48 @@ function applyPlayerSearch() {
         : "none";
   });
 }
+ // SHARE YOUR GOAT
+const sharePlayer = document.getElementById("sharePlayer");
+const shareButton = document.getElementById("shareButton");
+const shareStatus = document.getElementById("shareStatus");
+
+shareButton.addEventListener("click", async () => {
+  const playerName = sharePlayer.value;
+  const siteUrl = window.location.href;
+
+  const message =
+    "My GOAT is " + playerName +
+    "! Check out GOAT Battle and choose your legend.";
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: "GOAT Battle",
+        text: message,
+        url: siteUrl
+      });
+
+      shareStatus.textContent = "Thanks for sharing GOAT Battle!";
+    } else if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(
+        message + "\n" + siteUrl
+      );
+
+      shareStatus.textContent =
+        "Share message and website link copied!";
+    } else {
+      window.prompt(
+        "Copy this message and share it with friends:",
+        message + "\n" + siteUrl
+      );
+    }
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      shareStatus.textContent =
+        "Sharing failed. Please try again.";
+    }
+  }
+}); 
 function openProfile(id) {
   const data = profileData[id];
   const player = legends.find(p => p[0] === id);
