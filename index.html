@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,12 +19,13 @@ header p{color:var(--muted)}
 .card{background:linear-gradient(145deg,#172131,#0e1420);border:1px solid #29364a;border-radius:18px;padding:19px}
 .top{display:flex;align-items:center;gap:13px}
 .number{font-size:12px;color:var(--gold)}
-.avatar{width:52px;height:52px;border-radius:14px;background:#28364a;display:grid;place-items:center;font-size:23px}
+.avatar{width:76px;height:76px;flex-shrink:0;border-radius:14px;background:#28364a;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .name{font-size:17px;font-weight:700;line-height:1.3}
 .votes{color:var(--muted);font-size:13px;margin-top:6px}
 .bar{height:7px;background:#273143;border-radius:10px;margin:18px 0 12px;overflow:hidden}
 .fill{height:100%;width:0;background:linear-gradient(90deg,#b88922,#ffdf78);transition:width .4s}
-.bottom{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+.bottom{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);gap:8px}
 button{background:var(--gold);color:#111;border:0;border-radius:10px;padding:11px 17px;font-weight:800;cursor:pointer}
 button:disabled{opacity:.45;cursor:not-allowed}
 .panel{background:var(--panel);border:1px solid #29364a;border-radius:18px;padding:20px;margin:22px 0}
@@ -44,19 +44,15 @@ footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
   <h1>GOAT <span>BATTLE</span></h1>
   <p>10 Legends. One Vote. Who is your Greatest of All Time?</p>
 </header>
-
 <main class="wrap">
   <div class="status" id="status">Connecting to voting database…</div>
   <section class="grid" id="players"></section>
-
   <section class="panel">
     <h2>🏆 Live Leaderboard</h2>
     <div id="leaderboard">Waiting for votes…</div>
   </section>
   <footer>GOAT BATTLE · Fan voting, not an official award</footer>
 </main>
-
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -99,7 +95,18 @@ function renderPlayers() {
     top.className = "top";
     const avatar = document.createElement("div");
     avatar.className = "avatar";
-    avatar.textContent = flag;
+    const photo = document.createElement("img");
+    const extension = (id === "ronaldo-nazario" || id === "pele") ? "webp" : "jpg";
+    photo.src = "images/" + id + "." + extension;
+    photo.alt = name;
+    photo.loading = "lazy";
+    photo.onerror = () => {
+      avatar.textContent = flag;
+      avatar.style.display = "grid";
+      avatar.style.placeItems = "center";
+      avatar.style.fontSize = "23px";
+    };
+    avatar.appendChild(photo);
     const info = document.createElement("div");
     const num = document.createElement("div");
     num.className = "number";
@@ -216,7 +223,6 @@ if(configured) {
   statusBox.textContent = "Preview mode · Connect Firebase to enable shared voting";
   connected = true;
   renderPlayers();
-  // Preview only: no real votes are saved.
   playerBox.querySelectorAll("button").forEach(btn=>{
     btn.disabled = true;
     btn.textContent = "SET UP FIREBASE";
