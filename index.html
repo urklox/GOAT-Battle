@@ -151,7 +151,87 @@ button:active:not(:disabled) {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}</style>
+}
+/* PRO LEADERBOARD PODIUM */
+
+.podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+  margin: 24px 0;
+}
+
+.podium-card {
+  text-align: center;
+  padding: 18px 6px;
+  border: 1px solid #35445b;
+  border-radius: 15px;
+  background: linear-gradient(160deg, #1b293d, #0b111c);
+  animation: cardEnter 0.5s ease both;
+  min-width: 0;
+}
+
+.podium-card.first {
+  border-color: #f5c451;
+  box-shadow: 0 0 22px rgba(245, 196, 81, 0.15);
+  padding-top: 28px;
+  padding-bottom: 30px;
+}
+
+.podium-card.second {
+  border-color: #bfc8d5;
+}
+
+.podium-card.third {
+  border-color: #cd8b55;
+}
+
+.podium-medal {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.podium-rank {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.podium-name {
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.podium-votes {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+@media (max-width: 420px) {
+  .podium {
+    gap: 6px;
+  }
+
+  .podium-card {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .podium-name {
+    font-size: 12px;
+  }
+
+  .podium-medal {
+    font-size: 25px;
+  }
+}
+</style>
 </head>
 <body>
 <header>
@@ -180,6 +260,7 @@ button:active:not(:disabled) {
   <section class="grid" id="players"></section>
   <section class="panel">
     <h2>🏆 Live Leaderboard</h2>
+    <div id="podium" class="podium"></div>
     <div id="leaderboard">Waiting for votes…</div>
   </section>
   <footer>GOAT BATTLE · Fan voting, not an official award</footer>
@@ -289,6 +370,40 @@ function renderBoard() {
   const total = Object.values(voteCounts).reduce((a,b)=>a+b,0);
   const sorted = [...legends].sort((a,b)=>
     (voteCounts[b[0]]||0)-(voteCounts[a[0]]||0));
+const podium = document.getElementById("podium");
+podium.innerHTML = "";
+
+const podiumPlayers = [
+  { player: sorted[1], rank: 2, medal: "🥈", style: "second" },
+  { player: sorted[0], rank: 1, medal: "🥇", style: "first" },
+  { player: sorted[2], rank: 3, medal: "🥉", style: "third" }
+];
+
+podiumPlayers.forEach(({ player, rank, medal, style }) => {
+  const [id, name, flag] = player;
+
+  const card = document.createElement("div");
+  card.className = "podium-card " + style;
+
+  const icon = document.createElement("div");
+  icon.className = "podium-medal";
+  icon.textContent = medal;
+
+  const position = document.createElement("div");
+  position.className = "podium-rank";
+  position.textContent = "#" + rank;
+
+  const playerName = document.createElement("div");
+  playerName.className = "podium-name";
+  playerName.textContent = flag + " " + name;
+
+  const votes = document.createElement("div");
+  votes.className = "podium-votes";
+  votes.textContent = (voteCounts[id] || 0) + " votes";
+
+  card.append(icon, position, playerName, votes);
+  podium.appendChild(card);
+});
   board.innerHTML = "";
   sorted.forEach(([id,name,flag],i)=>{
     const row = document.createElement("div");
