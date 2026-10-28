@@ -231,6 +231,118 @@ button:active:not(:disabled) {
     font-size: 25px;
   }
 }
+/* PLAYER PROFILE DESIGN */
+
+.profile-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.profile-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 26px;
+  border: 1px solid #f5c451;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #1b293d, #080b12);
+  box-shadow: 0 0 40px rgba(245, 196, 81, 0.15);
+  animation: profileEnter 0.3s ease both;
+}
+
+.profile-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 9px 12px;
+  font-size: 17px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 18px 0 24px;
+  padding-right: 28px;
+}
+
+.profile-header img {
+  width: 112px;
+  height: 132px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 15px;
+  border: 2px solid #f5c451;
+  background: #28364a;
+}
+
+.profile-country {
+  color: #f5c451;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-header h2 {
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+
+.profile-header p,
+#profileCareer {
+  color: #c1cada;
+  line-height: 1.7;
+}
+
+.profile-dialog h3 {
+  color: #f5c451;
+  margin-top: 24px;
+}
+
+#profileAchievements {
+  padding-left: 22px;
+  color: #e3e8f0;
+  line-height: 1.9;
+}
+
+#profileAchievements li {
+  margin-bottom: 7px;
+}
+
+@keyframes profileEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 420px) {
+  .profile-dialog {
+    padding: 18px;
+  }
+
+  .profile-header {
+    gap: 12px;
+  }
+
+  .profile-header img {
+    width: 88px;
+    height: 108px;
+  }
+}  
 </style>
 </head>
 <body>
@@ -258,6 +370,33 @@ button:active:not(:disabled) {
   >
 </div>
   <section class="grid" id="players"></section>
+  <!-- PLAYER PROFILE MODAL -->
+<div id="profileModal" class="profile-modal"
+     style="display:none"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="profileName">
+
+  <div class="profile-dialog">
+    <button type="button" id="closeProfile"
+            class="profile-close"
+            aria-label="Close profile">✕</button>
+
+    <div class="profile-header">
+      <img id="profileImage" src="" alt="">
+      <div>
+        <div id="profileCountry" class="profile-country"></div>
+        <h2 id="profileName"></h2>
+        <p id="profilePosition"></p>
+      </div>
+    </div>
+
+    <p id="profileCareer"></p>
+
+    <h3>🏆 Career Highlights</h3>
+    <ul id="profileAchievements"></ul>
+  </div>
+</div>
   <section class="panel">
     <h2>🏆 Live Leaderboard</h2>
     <div id="podium" class="podium"></div>
@@ -289,6 +428,108 @@ const legends = [
   ["messi","Lionel Messi","🇦🇷"]
 ];
 
+const profileData = {
+  "platini": {
+    country: "🇫🇷 France",
+    position: "Attacking Midfielder",
+    career: "Michel Platini was a legendary French playmaker known for his passing, creativity and free kicks.",
+    achievements: [
+      "Won UEFA Euro 1984 with France",
+      "Won three consecutive Ballon d'Or awards (1983–1985)",
+      "Starred for Juventus and Saint-Étienne"
+    ]
+  },
+  "di-stefano": {
+    country: "🇦🇷 Argentina / 🇪🇸 Spain",
+    position: "Forward",
+    career: "Alfredo Di Stéfano was a versatile attacking legend who helped define Real Madrid's early European dominance.",
+    achievements: [
+      "Won five consecutive European Cups with Real Madrid",
+      "Won two Ballon d'Or awards",
+      "Known for his all-round attacking play"
+    ]
+  },
+  "beckenbauer": {
+    country: "🇩🇪 Germany",
+    position: "Defender / Sweeper",
+    career: "Franz Beckenbauer revolutionised the sweeper role and became one of football's most influential defenders.",
+    achievements: [
+      "Won the 1974 FIFA World Cup as a player",
+      "Won UEFA Euro 1972",
+      "Won two Ballon d'Or awards"
+    ]
+  },
+  "ronaldo-nazario": {
+    country: "🇧🇷 Brazil",
+    position: "Striker",
+    career: "Ronaldo Nazário was a phenomenal striker celebrated for his acceleration, dribbling and finishing.",
+    achievements: [
+      "Won FIFA World Cups in 1994 and 2002",
+      "Won two Ballon d'Or awards",
+      "Scored twice in the 2002 World Cup final"
+    ]
+  },
+  "zidane": {
+    country: "🇫🇷 France",
+    position: "Attacking Midfielder",
+    career: "Zinedine Zidane was an elegant playmaker admired for his technique, vision and control in big matches.",
+    achievements: [
+      "Won the 1998 FIFA World Cup",
+      "Won UEFA Euro 2000",
+      "Won the 1998 Ballon d'Or"
+    ]
+  },
+  "cruyff": {
+    country: "🇳🇱 Netherlands",
+    position: "Forward / Attacking Midfielder",
+    career: "Johan Cruyff was a football visionary whose technique and ideas helped shape Total Football.",
+    achievements: [
+      "Won three Ballon d'Or awards",
+      "Won three consecutive European Cups with Ajax",
+      "Led the Netherlands to the 1974 World Cup final"
+    ]
+  },
+  "cristiano-ronaldo": {
+    country: "🇵🇹 Portugal",
+    position: "Forward",
+    career: "Cristiano Ronaldo is renowned for his goalscoring, athleticism and achievements for club and country.",
+    achievements: [
+      "Won five Ballon d'Or awards",
+      "Won UEFA Euro 2016 with Portugal",
+      "Won five UEFA Champions League titles"
+    ]
+  },
+  "maradona": {
+    country: "🇦🇷 Argentina",
+    position: "Attacking Midfielder",
+    career: "Diego Maradona was an extraordinary playmaker known for his dribbling, creativity and influence on matches.",
+    achievements: [
+      "Won the 1986 FIFA World Cup",
+      "Received the 1986 World Cup Golden Ball",
+      "Helped Napoli win two Italian league titles"
+    ]
+  },
+  "pele": {
+    country: "🇧🇷 Brazil",
+    position: "Forward",
+    career: "Pelé was one of football's most celebrated forwards, known for his scoring ability and success with Brazil.",
+    achievements: [
+      "Won three FIFA World Cups: 1958, 1962 and 1970",
+      "Scored in two different World Cup finals",
+      "Became a global ambassador for football"
+    ]
+  },
+  "messi": {
+    country: "🇦🇷 Argentina",
+    position: "Forward / Playmaker",
+    career: "Lionel Messi is celebrated for his close control, creative passing, dribbling and goalscoring.",
+    achievements: [
+      "Won the 2022 FIFA World Cup",
+      "Won eight Ballon d'Or awards",
+      "Won four UEFA Champions League titles with Barcelona"
+    ]
+  }
+};  
 const playerBox = document.getElementById("players");
   const searchBox = document.getElementById("playerSearch");
 const statusBox = document.getElementById("status");
@@ -306,7 +547,70 @@ function applyPlayerSearch() {
         : "none";
   });
 }
+function openProfile(id) {
+  const data = profileData[id];
+  const player = legends.find(p => p[0] === id);
 
+  if (!data || !player) return;
+
+  const name = player[1];
+  const flag = player[2];
+  const extension =
+    (id === "ronaldo-nazario" || id === "pele")
+      ? "webp"
+      : "jpg";
+
+  const modal = document.getElementById("profileModal");
+  const photo = document.getElementById("profileImage");
+
+  photo.src = "images/" + id + "." + extension;
+  photo.alt = name;
+
+  document.getElementById("profileCountry").textContent =
+    data.country || flag;
+
+  document.getElementById("profileName").textContent = name;
+  document.getElementById("profilePosition").textContent =
+    data.position;
+
+  document.getElementById("profileCareer").textContent =
+    data.career;
+
+  const list = document.getElementById("profileAchievements");
+  list.innerHTML = "";
+
+  data.achievements.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    list.appendChild(li);
+  });
+
+  modal.style.display = "flex";
+}
+
+function closeProfile() {
+  document.getElementById("profileModal").style.display = "none";
+}
+
+document.getElementById("closeProfile").addEventListener(
+  "click",
+  closeProfile
+);
+
+document.getElementById("profileModal").addEventListener(
+  "click",
+  event => {
+    if (event.target.id === "profileModal") {
+      closeProfile();
+    }
+  }
+);
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    closeProfile();
+  }
+});
 searchBox.addEventListener("input", applyPlayerSearch);function renderPlayers() {
   playerBox.innerHTML = "";
   legends.forEach(([id,name,flag],i) => {
@@ -359,7 +663,17 @@ searchBox.addEventListener("input", applyPlayerSearch);function renderPlayers() 
     btn.disabled = !connected || !!myVote;
     btn.addEventListener("click",()=>castVote(id));
     bottom.append(pct,btn);
-    card.append(top,bar,bottom);
+    const profileBtn = document.createElement("button");
+profileBtn.textContent = "VIEW PROFILE";
+profileBtn.style.width = "100%";
+profileBtn.style.marginTop = "12px";
+profileBtn.style.background = "transparent";
+profileBtn.style.color = "var(--gold)";
+profileBtn.style.border = "1px solid var(--gold)";
+
+profileBtn.addEventListener("click", () => openProfile(id));
+
+card.append(top,bar,bottom,profileBtn);
     playerBox.append(card);
   });
  applyPlayerSearch();
