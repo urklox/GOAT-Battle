@@ -52,7 +52,17 @@ footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
        style="font-size:42px;font-weight:800;color:var(--gold)">
     0
   </div>
-</div>  <section class="grid" id="players"></section>
+</div> 
+  <div style="margin:18px 0">
+  <input
+    id="playerSearch"
+    type="search"
+    placeholder="🔎 Search football legends..."
+    aria-label="Search football legends"
+    style="width:100%;padding:14px 16px;border:1px solid #29364a;border-radius:12px;background:#121927;color:#fff;font-size:16px;outline:none;"
+  >
+</div>
+  <section class="grid" id="players"></section>
   <section class="panel">
     <h2>🏆 Live Leaderboard</h2>
     <div id="leaderboard">Waiting for votes…</div>
@@ -84,12 +94,24 @@ const legends = [
 ];
 
 const playerBox = document.getElementById("players");
+  const searchBox = document.getElementById("playerSearch");
 const statusBox = document.getElementById("status");
 const board = document.getElementById("leaderboard");
 let db, currentUid = null, myVote = null, voteCounts = {};
 let connected = false;
 
-function renderPlayers() {
+function applyPlayerSearch() {
+  const query = searchBox.value.trim().toLowerCase();
+
+  playerBox.querySelectorAll(".card").forEach(card => {
+    card.style.display =
+      card.textContent.toLowerCase().includes(query)
+        ? ""
+        : "none";
+  });
+}
+
+searchBox.addEventListener("input", applyPlayerSearch);function renderPlayers() {
   playerBox.innerHTML = "";
   legends.forEach(([id,name,flag],i) => {
     const count = voteCounts[id] || 0;
@@ -144,7 +166,8 @@ function renderPlayers() {
     card.append(top,bar,bottom);
     playerBox.append(card);
   });
-  renderBoard();
+ applyPlayerSearch();
+ renderBoard();
 }
 
 function renderBoard() {
