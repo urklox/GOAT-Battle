@@ -342,7 +342,106 @@ button:active:not(:disabled) {
     width: 88px;
     height: 108px;
   }
-}  
+} 
+ /* FOOTBALL FANS COMMENTS DESIGN */
+
+#commentsSection {
+  border-color: #35445b;
+  background: linear-gradient(145deg, #172131, #0b111c);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+#commentForm label {
+  display: block;
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+#commentName,
+#commentText {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#commentName:focus,
+#commentText:focus {
+  outline: none;
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 3px rgba(245, 196, 81, 0.12);
+}
+
+#commentCount {
+  font-variant-numeric: tabular-nums;
+}
+
+#commentsList {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.comment-card {
+  padding: 16px;
+  border: 1px solid #29364a;
+  border-radius: 14px;
+  background: rgba(8, 11, 18, 0.7);
+  overflow-wrap: anywhere;
+  animation: cardEnter 0.35s ease both;
+}
+
+.comment-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.comment-author {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.comment-time {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.comment-message {
+  margin: 0;
+  color: #e3e8f0;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 20px 8px;
+  border: 1px dashed #35445b;
+  border-radius: 12px;
+}
+
+#postCommentButton {
+  min-height: 44px;
+}
+
+#postCommentButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  #commentsSection {
+    padding: 16px;
+  }
+
+  .comment-card {
+    padding: 13px;
+  }
+} 
 </style>
 </head>
 <body>
@@ -429,6 +528,62 @@ button:active:not(:disabled) {
   </button>
 
   <p id="shareStatus" class="status" aria-live="polite"></p>
+</section>
+  <!-- FOOTBALL FANS COMMENTS -->
+<section class="panel" id="commentsSection">
+  <h2>💬 Football Fans Zone</h2>
+
+  <p style="color:var(--muted)">
+    Share your football opinions with other fans!
+  </p>
+
+  <form id="commentForm">
+    <label for="commentName">Your Name</label>
+
+    <input
+      id="commentName"
+      type="text"
+      minlength="2"
+      maxlength="24"
+      placeholder="Enter your name"
+      autocomplete="nickname"
+      required
+      style="width:100%;display:block;margin:10px 0 16px;padding:13px;border-radius:10px;background:#080b12;color:#fff;border:1px solid #35445b;font:inherit"
+    >
+
+    <label for="commentText">Your Comment</label>
+
+    <textarea
+      id="commentText"
+      minlength="2"
+      maxlength="300"
+      rows="4"
+      placeholder="Who is your GOAT and why?"
+      required
+      style="width:100%;display:block;margin:10px 0;padding:14px;border-radius:12px;background:#080b12;color:#fff;border:1px solid #35445b;font:inherit;resize:vertical"
+    ></textarea>
+
+    <div id="commentCount"
+      style="text-align:right;color:var(--muted);font-size:12px;margin-bottom:14px">
+      0 / 300
+    </div>
+
+    <button type="submit" id="postCommentButton">
+      📨 Post Comment
+    </button>
+
+    <p id="commentStatus" class="status" aria-live="polite"></p>
+  </form>
+
+  <hr style="border-color:#29364a;margin:24px 0">
+
+  <h3>⚽ Latest Fan Comments</h3>
+
+  <div id="commentsList">
+    <p style="color:var(--muted)">
+      Connecting to comments...
+    </p>
+  </div>
 </section>
   <footer>GOAT BATTLE · Fan voting, not an official award</footer>
 </main>
@@ -821,10 +976,139 @@ function castVote(playerId) {
     statusBox.textContent = "Vote failed: " + err.message;
   });
 }
+// FOOTBALL FANS COMMENTS SYSTEM
 
+const commentForm = document.getElementById("commentForm");
+const commentNameInput = document.getElementById("commentName");
+const commentTextInput = document.getElementById("commentText");
+const commentCount = document.getElementById("commentCount");
+const commentStatus = document.getElementById("commentStatus");
+const commentsList = document.getElementById("commentsList");
+const postCommentButton = document.getElementById("postCommentButton");
+
+let commentsUnsubscribe = null;
+
+// Count comment characters
+commentTextInput.addEventListener("input", () => {
+  commentCount.textContent =
+    commentTextInput.value.length + " / 300";
+});
+
+// Display comments safely
+function renderComments(snapshot) {
+  commentsList.innerHTML = "";
+
+  if (snapshot.empty) {
+    const empty = document.createElement("p");
+    empty.className = "comment-empty";
+    empty.textContent = "No comments yet. Be the first to comment!";
+    commentsList.appendChild(empty);
+    return;
+  }
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+
+    const card = document.createElement("article");
+    card.className = "comment-card";
+
+    const meta = document.createElement("div");
+    meta.className = "comment-meta";
+
+    const author = document.createElement("span");
+    author.className = "comment-author";
+    author.textContent = "⚽ " + (data.author || "Football Fan");
+
+    const time = document.createElement("span");
+    time.className = "comment-time";
+
+    if (data.createdAt && data.createdAt.toDate) {
+      time.textContent = data.createdAt.toDate().toLocaleString();
+    } else {
+      time.textContent = "Just now";
+    }
+
+    const message = document.createElement("p");
+    message.className = "comment-message";
+    message.textContent = data.text || "";
+
+    meta.append(author, time);
+    card.append(meta, message);
+    commentsList.appendChild(card);
+  });
+}
+
+// Listen for live comment updates
+function initComments() {
+  if (!db) return;
+
+  if (commentsUnsubscribe) {
+    commentsUnsubscribe();
+  }
+
+  commentsUnsubscribe = db.collection("comments")
+    .orderBy("createdAt", "desc")
+    .limit(50)
+    .onSnapshot(snapshot => {
+      renderComments(snapshot);
+    }, error => {
+      commentsList.textContent =
+        "Could not load comments. Please check Firestore Rules.";
+      console.error("Comments loading error:", error);
+    });
+}
+
+// Submit a comment
+commentForm.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!db || !currentUid) {
+    commentStatus.textContent =
+      "Please wait for Firebase sign-in to finish.";
+    return;
+  }
+
+  const author = commentNameInput.value.trim();
+  const message = commentTextInput.value.trim();
+
+  if (author.length < 2 || author.length > 24) {
+    commentStatus.textContent =
+      "Your name must be between 2 and 24 characters.";
+    return;
+  }
+
+  if (message.length < 2 || message.length > 300) {
+    commentStatus.textContent =
+      "Your comment must be between 2 and 300 characters.";
+    return;
+  }
+
+  postCommentButton.disabled = true;
+  commentStatus.textContent = "Posting your comment...";
+
+  try {
+    await db.collection("comments").add({
+      uid: currentUid,
+      author: author,
+      text: message,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    commentTextInput.value = "";
+    commentCount.textContent = "0 / 300";
+    commentStatus.textContent = "Comment posted successfully!";
+  } catch (error) {
+    console.error("Comment posting error:", error);
+    commentStatus.textContent =
+      "Could not post comment. Check your connection and Firestore Rules.";
+  } finally {
+    postCommentButton.disabled = false;
+  }
+});
 function start() {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
+  initComments();
   firebase.auth().signInAnonymously().catch(err=>{
     statusBox.textContent = "Sign-in error. Check Firebase Anonymous Authentication.";
   });
