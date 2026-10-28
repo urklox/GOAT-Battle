@@ -46,7 +46,13 @@ footer{text-align:center;color:var(--muted);padding:30px;font-size:12px}
 </header>
 <main class="wrap">
   <div class="status" id="status">Connecting to voting database…</div>
-  <section class="grid" id="players"></section>
+<div class="panel" style="text-align:center">
+  <h2>🌍 Total Votes</h2>
+  <div id="totalVotes"
+       style="font-size:42px;font-weight:800;color:var(--gold)">
+    0
+  </div>
+</div>  <section class="grid" id="players"></section>
   <section class="panel">
     <h2>🏆 Live Leaderboard</h2>
     <div id="leaderboard">Waiting for votes…</div>
@@ -88,6 +94,7 @@ function renderPlayers() {
   legends.forEach(([id,name,flag],i) => {
     const count = voteCounts[id] || 0;
     const total = Object.values(voteCounts).reduce((a,b)=>a+b,0);
+    document.getElementById("totalVotes").textContent = total;
     const percent = total ? (count/total*100) : 0;
     const card = document.createElement("article");
     card.className = "card";
